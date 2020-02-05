@@ -25,9 +25,9 @@ func New(sink int) *Jeolgyu {
 	var file *os.File
 	var err error
 
-	if (sink & SinkFile) == 0x2 {
+	if (sink & SinkFile) == SinkFile {
 		t := time.Now().Format("2006-Jan-2 15h 04m 05s")
-		filename = t + " .log"
+		filename = t + ".log"
 
 		if !exists(filename) {
 			file, err = os.Create(filename)
@@ -120,10 +120,10 @@ func sinkFile(message []byte, file *os.File) {
 
 func exists(filename string) bool {
 	if _, err := os.Stat(filename); err != nil {
-		return true
+		return false
 	}
 
-	return false
+	return true
 }
 
 func now() string {
