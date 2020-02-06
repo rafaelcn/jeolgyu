@@ -39,7 +39,7 @@ func TestSerialize(t *testing.T) {
 		{
 			Level:      InfoLevel,
 			Message:    "A %s message with %d %s.",
-			Arguments:  []interface{}{"Rafael's", 3, "arguments"},
+			Arguments:  []interface{}{"Rafael's", "arguments"},
 			Want:       `{"level":"info","what":"A Rafael's message with arguments.","when":""}`,
 			ShouldFail: true,
 		},
@@ -49,7 +49,7 @@ func TestSerialize(t *testing.T) {
 		f := format(te.Message, te.Arguments...)
 		m := Serialize(te.Level, f, "")
 
-		if ok := reflect.DeepEqual(te.Want, []byte(m)); ok && !te.ShouldFail {
+		if ok := reflect.DeepEqual(te.Want, string(m)); !ok && !te.ShouldFail {
 			t.Logf("Failed assertion %d. Wants: %s | Got %s", i, te.Want, m)
 		}
 	}
