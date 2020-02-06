@@ -11,7 +11,7 @@ import (
 type (
 	// Jeolgyu encapsulates the settings of the logger
 	Jeolgyu struct {
-		sink     int
+		sink     Sink
 		filename string
 		file     *os.File
 	}
@@ -25,7 +25,7 @@ type (
 // SinkFile, SinkOutput, SinkBoth. The fp parameter is only given if you want to
 // specify where the loggerfile must be created, this parameter can be given as
 // a relative path.
-func New(sink int, fp string) (*Jeolgyu, error) {
+func New(sink Sink, fp string) (*Jeolgyu, error) {
 	filename := ""
 	var file *os.File
 	var err error
@@ -71,17 +71,7 @@ func (j *Jeolgyu) Info(message string, arguments ...interface{}) {
 	t := now()
 	m := format(message, arguments...)
 
-	serialized := Serialize(InfoLevel, m, t)
-
-	switch j.sink {
-	case SinkBoth:
-		sinkOutput(serialized)
-		sinkFile(serialized, j.file)
-	case SinkFile:
-		sinkFile(serialized, j.file)
-	case SinkOutput:
-		sinkOutput(serialized)
-	}
+	j.sinkTo(Serialize(InfoLevel, m, t))
 }
 
 // Warning prints a warning message to whatever sink is selected
@@ -89,34 +79,35 @@ func (j *Jeolgyu) Warning(message string, arguments ...interface{}) {
 	t := now()
 	m := format(message, arguments...)
 
-	serialized := Serialize(WarningLevel, m, t)
-
-	switch j.sink {
-	case SinkBoth:
-		sinkOutput(serialized)
-		sinkFile(serialized, j.file)
-	case SinkFile:
-		sinkFile(serialized, j.file)
-	case SinkOutput:
-		sinkOutput(serialized)
-	}
+	j.sinkTo(Serialize(WarningLevel, m, t))
 }
 
-// Panic prints a message to whatever sink is selected and panics afterwards
+// Error prints an error message to whatever sink is selected
+func (j *Jeolgyu) Error(message string, arguments ...interface{}) {
+	t := now()
+	m := format(message, arguments...)
+
+	j.sinkTo(Serialize(ErrorLevel, m, t))
+}
+
+// Panic prints a message to whatever sink is selected
 func (j *Jeolgyu) Panic(message string, arguments ...interface{}) {
 	t := now()
 	m := format(message, arguments...)
 
-	serialized := Serialize(PanicLevel, m, t)
+	j.sinkTo(Serialize(PanicLevel, m, t))
+}
 
+// sinkTo sends the message to whatever sink j is set to
+func (j *Jeolgyu) sinkTo(m []byte) {
 	switch j.sink {
 	case SinkBoth:
-		sinkOutput(serialized)
-		sinkFile(serialized, j.file)
+		sinkOutput(m)
+		sinkFile(m, j.file)
 	case SinkFile:
-		sinkFile(serialized, j.file)
+		sinkFile(m, j.file)
 	case SinkOutput:
-		sinkOutput(serialized)
+		sinkOutput(m)
 	}
 }
 
