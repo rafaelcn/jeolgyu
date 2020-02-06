@@ -1,9 +1,10 @@
 package jeolgyu
 
+// Type abstracting the message level of the message
 type Level int8
 
 const (
-	// An information message telling you about something. 
+	// An information message telling you about something.
 	InfoLevel = iota + 1
 	// A warning level message. If I'd describe it, it would be a thing to pay
 	// attetion whenever messages of this type appears
@@ -23,6 +24,8 @@ func (l Level) String() string {
 		s = "info"
 	case WarningLevel:
 		s = "warning"
+	case ErrorLevel: 
+		s = "error"
 	case PanicLevel:
 		s = "panic"
 	}
