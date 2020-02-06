@@ -3,6 +3,8 @@ package jeolgyu
 import (
 	"fmt"
 	"os"
+	"path"
+	"path/filepath"
 	"time"
 )
 
@@ -19,8 +21,11 @@ type (
 	MessageFormat map[string]string
 )
 
-// New creates a jeolgyu logger
-func New(sink int) *Jeolgyu {
+// New creates a jeolgyu logger. The sink is given as one of the three:
+// SinkFile, SinkOutput, SinkBoth. The fp parameter is only given if you want to
+// specify where the loggerfile must be created, this parameter can be given as
+// a relative path.
+func New(sink int, fp string) (*Jeolgyu, error) {
 	filename := ""
 	var file *os.File
 	var err error
@@ -30,18 +35,24 @@ func New(sink int) *Jeolgyu {
 		filename = t + ".log"
 
 		if !exists(filename) {
-			file, err = os.Create(filename)
+			abs, _ := filepath.Abs(fp)
+			f := path.Join(abs, filename)
+			file, err = os.Create(f)
 
 			if err != nil {
 				const msg = "Error trying to create log file %s. Reason %v"
-				panic(fmt.Sprintf(msg, filename, err))
+				e := fmt.Errorf(msg, filename, err)
+
+				return nil, e
 			}
 		} else {
 			file, err = os.Open(filename)
 
 			if err != nil {
 				const msg = "Error trying to open log file %s. Reason %v"
-				panic(fmt.Sprintf(msg, filename, err))
+				e := fmt.Errorf(msg, filename, err)
+
+				return nil, e
 			}
 		}
 	}
@@ -52,7 +63,7 @@ func New(sink int) *Jeolgyu {
 		file:     file,
 	}
 
-	return j
+	return j, nil
 }
 
 // Info prints information messages to whathever sink is selected
@@ -60,7 +71,7 @@ func (j *Jeolgyu) Info(message string, arguments ...interface{}) {
 	t := now()
 	m := format(message, arguments...)
 
-	serialized := Serialize("info", m, t)
+	serialized := Serialize(InfoLevel, m, t)
 
 	switch j.sink {
 	case SinkBoth:
@@ -78,7 +89,7 @@ func (j *Jeolgyu) Warning(message string, arguments ...interface{}) {
 	t := now()
 	m := format(message, arguments...)
 
-	serialized := Serialize("info", m, t)
+	serialized := Serialize(WarningLevel, m, t)
 
 	switch j.sink {
 	case SinkBoth:
@@ -96,7 +107,7 @@ func (j *Jeolgyu) Panic(message string, arguments ...interface{}) {
 	t := now()
 	m := format(message, arguments...)
 
-	serialized := Serialize("info", m, t)
+	serialized := Serialize(PanicLevel, m, t)
 
 	switch j.sink {
 	case SinkBoth:
@@ -107,6 +118,18 @@ func (j *Jeolgyu) Panic(message string, arguments ...interface{}) {
 	case SinkOutput:
 		sinkOutput(serialized)
 	}
+}
+
+// This function exists with debugging/testing purposes to return the name of
+// the file that Jeolgyu created when initialized.
+func (j *Jeolgyu) getFilename() string {
+	return j.filename
+}
+
+// This function exists with debugging/testing purposes to return the file that
+// Jeolgyu created when initialized.
+func (j *Jeolgyu) getFile() *os.File {
+	return j.file
 }
 
 func sinkOutput(message []byte) {
@@ -131,5 +154,9 @@ func now() string {
 }
 
 func format(message string, arguments ...interface{}) string {
+	if arguments == nil || len(arguments) == 0 {
+		return message
+	}
+
 	return fmt.Sprintf(message, arguments...)
 }

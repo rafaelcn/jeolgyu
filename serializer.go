@@ -6,10 +6,10 @@ import (
 )
 
 // Serialize returns a marshalled message given the default output message
-func Serialize(level, what, when string) []byte {
+func Serialize(level Level, what, when string) []byte {
 	output := make(MessageFormat, 1)
 
-	output["level"] = level
+	output["level"] = level.String()
 	output["what"] = what
 	output["when"] = when
 
