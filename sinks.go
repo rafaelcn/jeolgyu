@@ -1,11 +1,14 @@
 package jeolgyu
 
+// Sink is a type abstracting over the possible sinks of the logger
+type Sink int8
+
 const (
 	// SinkFile outputs every sentence sent to the logger to a file
-	SinkFile = 0x2
+	SinkFile Sink = 0x2
 	// SinkOutput redirects every sentence sent to the logger to the stabdard
 	// output
-	SinkOutput = 0x4
+	SinkOutput Sink = 0x4
 	// SinkBoth redirects every
-	SinkBoth = SinkFile | SinkOutput
+	SinkBoth Sink = SinkFile | SinkOutput
 )
