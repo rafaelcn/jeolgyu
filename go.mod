@@ -1,3 +1,3 @@
-module github.com/rafaelcn/logger
+module github.com/rafaelcn/jeolgyu
 
 go 1.13
