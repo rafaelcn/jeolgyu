@@ -22,9 +22,10 @@ type (
 )
 
 // New creates a jeolgyu logger. The sink is given as one of the three:
-// SinkFile, SinkOutput, SinkBoth. The fp parameter is only given if you want to
-// specify where the loggerfile must be created, this parameter can be given as
-// a relative path.
+// SinkFile, SinkOutput, SinkBoth.
+//
+// The fp (filepath) parameter is only given if you want to specify where the
+// loggerfile must be created, this parameter can be given as a relative path.
 func New(sink Sink, fp string) (*Jeolgyu, error) {
 	filename := ""
 	var file *os.File
