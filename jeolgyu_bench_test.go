@@ -8,7 +8,10 @@ const (
 	N3 = 65536
 )
 
-// TestSinkFile benchmarks the execution of consecutive log.Info calls
+// BenchmarkSinkFileN benchmarks the execution of consecutive log.Info calls
+// with size N. The following functions just change the ammount of calls it will
+// make to the logger.
+
 func BenchmarkSinkFileN(b *testing.B) {
 
 	l, err := New(SinkFile, "/tmp/")
