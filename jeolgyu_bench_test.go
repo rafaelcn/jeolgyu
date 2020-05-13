@@ -1,6 +1,9 @@
 package jeolgyu
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
 const (
 	N  = 1024
@@ -8,13 +11,16 @@ const (
 	N3 = 65536
 )
 
+var (
+	temp = os.TempDir()
+)
+
 // BenchmarkSinkFileN benchmarks the execution of consecutive log.Info calls
 // with size N. The following functions just change the ammount of calls it will
 // make to the logger.
 
 func BenchmarkSinkFileN(b *testing.B) {
-
-	l, err := New(SinkFile, "/tmp/")
+	l, err := New(SinkFile, temp)
 
 	if err != nil {
 		b.Fatalf("Couldn't initialize logger. Reason %v", err)
@@ -29,7 +35,7 @@ func BenchmarkSinkFileN(b *testing.B) {
 
 func BenchmarkSinkFileN2(b *testing.B) {
 
-	l, err := New(SinkFile, "/tmp/")
+	l, err := New(SinkFile, temp)
 
 	if err != nil {
 		b.Fatalf("Couldn't initialize logger. Reason %v", err)
@@ -44,7 +50,7 @@ func BenchmarkSinkFileN2(b *testing.B) {
 
 func BenchmarkSinkFileN3(b *testing.B) {
 
-	l, err := New(SinkFile, "/tmp/")
+	l, err := New(SinkFile, temp)
 
 	if err != nil {
 		b.Fatalf("Couldn't initialize logger. Reason %v", err)
