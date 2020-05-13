@@ -108,7 +108,7 @@ func (j *Jeolgyu) sinkTo(level Level, message string, arguments ...interface{}) 
 func sinkOutput(level Level, message string) {
 	t := time.Now().Format("15:04:05")
 
-	fmt.Print(serializeToOutput(level, message, t))
+	fmt.Println(serializeToOutput(level, message, t))
 }
 
 // sinkFile appends a message to the current file log with a serialized output
