@@ -41,5 +41,5 @@ func serializeToOutput(level Level, what, when string) string {
 		message = message + what
 	}
 
-	return message
+	return message + "\n"
 }
