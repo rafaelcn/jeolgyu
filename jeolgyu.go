@@ -25,7 +25,9 @@ type (
 // SinkFile, SinkOutput, SinkBoth.
 //
 // The fp (filepath) parameter is only given if you want to specify where the
-// loggerfile must be created, this parameter can be given as a relative path.
+// loggerfile must be created, this parameter can be given as a relative path,
+// by default it creates log files under the same directory of the running
+// application.
 func New(sink Sink, fp string) (*Jeolgyu, error) {
 	filename := ""
 	var file *os.File
@@ -69,86 +71,63 @@ func New(sink Sink, fp string) (*Jeolgyu, error) {
 
 // Info prints information messages to whathever sink is selected
 func (j *Jeolgyu) Info(message string, arguments ...interface{}) {
-	t := now()
-	m := format(message, arguments...)
-
-	j.sinkTo(Serialize(InfoLevel, m, t))
+	j.sinkTo(InfoLevel, message, arguments...)
 }
 
 // Warning prints a warning message to whatever sink is selected
 func (j *Jeolgyu) Warning(message string, arguments ...interface{}) {
-	t := now()
-	m := format(message, arguments...)
-
-	j.sinkTo(Serialize(WarningLevel, m, t))
+	j.sinkTo(WarningLevel, message, arguments...)
 }
 
 // Error prints an error message to whatever sink is selected
 func (j *Jeolgyu) Error(message string, arguments ...interface{}) {
-	t := now()
-	m := format(message, arguments...)
-
-	j.sinkTo(Serialize(ErrorLevel, m, t))
+	j.sinkTo(ErrorLevel, message, arguments...)
 }
 
 // Panic prints a message to whatever sink is selected
 func (j *Jeolgyu) Panic(message string, arguments ...interface{}) {
-	t := now()
-	m := format(message, arguments...)
-
-	j.sinkTo(Serialize(PanicLevel, m, t))
+	j.sinkTo(PanicLevel, message, arguments...)
 }
 
 // sinkTo sends the message to whatever sink j is set to
-func (j *Jeolgyu) sinkTo(m []byte) {
+func (j *Jeolgyu) sinkTo(level Level, message string, arguments ...interface{}) {
+	m := format(message, arguments...)
+
 	switch j.sink {
 	case SinkBoth:
-		sinkOutput(m)
-		sinkFile(m, j.file)
+		sinkOutput(level, m)
+		sinkFile(level, m, j.file)
 	case SinkFile:
-		sinkFile(m, j.file)
+		sinkFile(level, m, j.file)
 	case SinkOutput:
-		sinkOutput(m)
+		sinkOutput(level, m)
 	}
 }
 
-// This function exists with debugging/testing purposes to return the name of
+// sinkOutput formats the message to the stdout
+func sinkOutput(level Level, message string) {
+	t := time.Now().Format("15:04:05")
+
+	fmt.Print(serializeToOutput(level, message, t))
+}
+
+// sinkFile appends a message to the current file log with a serialized output
+func sinkFile(level Level, message string, file *os.File) {
+	t := time.Now().Format("2006-Jan-2 15:04:05")
+	m := serializeToFile(level, message, t)
+
+	m = append(m, '\n')
+	file.WriteString(string(m))
+}
+
+// getFilename exists with debugging/testing purposes to return the name of
 // the file that Jeolgyu created when initialized.
 func (j *Jeolgyu) getFilename() string {
 	return j.filename
 }
 
-// This function exists with debugging/testing purposes to return the file that
+// getFile exists with debugging/testing purposes to return the file that
 // Jeolgyu created when initialized.
 func (j *Jeolgyu) getFile() *os.File {
 	return j.file
-}
-
-func sinkOutput(message []byte) {
-	fmt.Print(string(message))
-}
-
-func sinkFile(message []byte, file *os.File) {
-	message = append(message, '\n')
-	file.WriteString(string(message))
-}
-
-func exists(filename string) bool {
-	if _, err := os.Stat(filename); err != nil {
-		return false
-	}
-
-	return true
-}
-
-func now() string {
-	return time.Now().Format("2006-Jan-2 15h 04m 05s")
-}
-
-func format(message string, arguments ...interface{}) string {
-	if arguments == nil || len(arguments) == 0 {
-		return message
-	}
-
-	return fmt.Sprintf(message, arguments...)
 }

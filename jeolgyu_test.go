@@ -2,6 +2,7 @@ package jeolgyu
 
 import (
 	"io/ioutil"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -14,7 +15,7 @@ type Test struct {
 	Want      string
 }
 
-var jeolgyuTests []Test = []Test{
+var jeolgyuSinkFileTests []Test = []Test{
 	{
 		Level:   PanicLevel,
 		Message: "Something very bad happened",
@@ -42,6 +43,34 @@ var jeolgyuTests []Test = []Test{
 	},
 }
 
+var jeolgyuSinkOutputTests []Test = []Test{
+	{
+		Level:   PanicLevel,
+		Message: "Something very bad happened",
+		Want:    `[P] Something very bad happened"`,
+	},
+	{
+		Level:   WarningLevel,
+		Message: "Something bad might have happened",
+		Want:    `[!] Something bad might have happened`,
+	},
+	{
+		Level:   ErrorLevel,
+		Message: "ERRRRRRRRROER o.O",
+		Want:    `[x] ERRRRRRRRROER o.O`,
+	},
+	{
+		Level:   InfoLevel,
+		Message: "Don't worry, everything is fine",
+		Want:    `[+] Don't worry, everything is fine`,
+	},
+	{
+		Level:   InfoLevel,
+		Message: "Some information for you sir",
+		Want:    `[+] Some information for you sir`,
+	},
+}
+
 func TestSinkFile(t *testing.T) {
 	j, err := New(SinkFile, "")
 
@@ -49,7 +78,7 @@ func TestSinkFile(t *testing.T) {
 		t.Error(err)
 	}
 
-	for i, tt := range jeolgyuTests {
+	for i, tt := range jeolgyuSinkFileTests {
 		switch tt.Level {
 		case InfoLevel:
 			j.Info(tt.Message, tt.Arguments...)
@@ -72,6 +101,41 @@ func TestSinkFile(t *testing.T) {
 
 		if ok := reflect.DeepEqual(tt.Want, last); !ok {
 			t.Logf("Failed assertion %d. Wants: %s | Got %s", i, tt.Want, last)
+		}
+	}
+}
+
+func TestSinkOutput(t *testing.T) {
+	j, err := New(SinkOutput, "")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	for i, tt := range jeolgyuSinkOutputTests {
+		switch tt.Level {
+		case InfoLevel:
+			j.Info(tt.Message, tt.Arguments...)
+		case WarningLevel:
+			j.Warning(tt.Message, tt.Arguments...)
+		case ErrorLevel:
+			j.Error(tt.Message, tt.Arguments...)
+		case PanicLevel:
+			j.Panic(tt.Message, tt.Arguments...)
+		}
+
+		buf := make([]byte, len(tt.Message))
+
+		_, err := os.Stdout.Read(buf)
+
+		if err != nil {
+			t.Errorf("Couldn't read from stdout. Reason %v", err)
+		}
+
+		output := string(buf)
+
+		if ok := reflect.DeepEqual(tt.Want, output); !ok {
+			t.Logf("Failed assertion %d. Wants: %s | Got %s", i, tt.Want, output)
 		}
 	}
 }

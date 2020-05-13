@@ -5,8 +5,8 @@ import (
 	"fmt"
 )
 
-// Serialize returns a marshalled message given the default output message
-func Serialize(level Level, what, when string) []byte {
+// serializeToFile returns a marshalled message given the default output message
+func serializeToFile(level Level, what, when string) []byte {
 	output := make(MessageFormat, 1)
 
 	output["level"] = level.String()
@@ -18,6 +18,27 @@ func Serialize(level Level, what, when string) []byte {
 	if err != nil {
 		msg := fmt.Sprintf("Couldn't transform message to JSON. Reason %v", err)
 		panic(msg)
+	}
+
+	return message
+}
+
+func serializeToOutput(level Level, what, when string) string {
+	message := ""
+
+	switch level {
+	case InfoLevel:
+		message = when + " [+] "
+		message = message + what
+	case WarningLevel:
+		message = when + " [!] "
+		message = message + what
+	case ErrorLevel:
+		message = when + " [x] "
+		message = message + what
+	case PanicLevel:
+		message = when + " [P] "
+		message = message + what
 	}
 
 	return message
