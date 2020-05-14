@@ -118,7 +118,7 @@ func (j *Jeolgyu) sinkOutput(level Level, message string) {
 	}
 
 	m := serializeToOutput(level, message, t)
-	m = append(m, '\n')
+	//m = append(m, '\n')
 
 	if level == ErrorLevel {
 		fmt.Fprint(os.Stderr, string(m))
