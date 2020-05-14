@@ -13,7 +13,7 @@ type serializerTests struct {
 	ShouldFail bool
 }
 
-func TestSerialize(t *testing.T) {
+func TestSerializeFile(t *testing.T) {
 	tests := []serializerTests{
 		{
 			Level:      ErrorLevel,
