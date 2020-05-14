@@ -19,27 +19,39 @@ var jeolgyuSinkFileTests []Test = []Test{
 	{
 		Level:   PanicLevel,
 		Message: "Something very bad happened",
-		Want:    `{"level":"panic","what":"Something very bad happened",when:""}`,
+		Want:    `{"level":"panic","what":"Something very bad happened","when":""}`,
 	},
 	{
 		Level:   WarningLevel,
 		Message: "Something bad might have happened",
-		Want:    `{"level":"warning","what":"Something bad might have happened",when:""}`,
+		Want:    `{"level":"warning","what":"Something bad might have happened","when":""}`,
 	},
 	{
 		Level:   ErrorLevel,
 		Message: "ERRRRRRRRROER o.O",
-		Want:    `{"level":"error","what":"ERRRRRRRRROER o.O",when:""}`,
+		Want:    `{"level":"error","what":"ERRRRRRRRROER o.O","when":""}`,
 	},
 	{
 		Level:   InfoLevel,
 		Message: "Don't worry, everything is fine",
-		Want:    `{"level":"info","what":"Don't worry, everything is fine",when:""}`,
+		Want:    `{"level":"info","what":"Don't worry, everything is fine","when":""}`,
 	},
 	{
 		Level:   InfoLevel,
 		Message: "Some information for you sir",
-		Want:    `{"level":"info","what":"Some information for you sir",when:""}`,
+		Want:    `{"level":"info","what":"Some information for you sir","when":""}`,
+	},
+	{
+		Level:     InfoLevel,
+		Message:   "Take a look",
+		Arguments: []interface{}{"unused argument in the string"},
+		Want:      `{"level":"info","what":"Take a look%!(EXTRA string=unused argument in the string)","when":""}`,
+	},
+	{
+		Level:     ErrorLevel,
+		Message:   "The author %s is a very good friend",
+		Arguments: []interface{}{"Mikael Messias"},
+		Want:      `{"level":"error","what":"The author Mikael Messias is a very good friend","when":""}`,
 	},
 }
 
@@ -73,6 +85,7 @@ var jeolgyuSinkOutputTests []Test = []Test{
 
 func TestSinkFile(t *testing.T) {
 	j, err := New(SinkFile, "")
+	j.testing = true
 
 	if err != nil {
 		t.Error(err)
@@ -105,8 +118,12 @@ func TestSinkFile(t *testing.T) {
 	}
 }
 
-func TestSinkOutput(t *testing.T) {
+func testSinkOutput(t *testing.T) {
+	// FIXME: Mock an stdout to use as testing because in the current status
+	// there's no way to run this test.
+
 	j, err := New(SinkOutput, "")
+	j.testing = true
 
 	if err != nil {
 		t.Error(err)

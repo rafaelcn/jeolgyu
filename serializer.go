@@ -5,6 +5,13 @@ import (
 	"fmt"
 )
 
+const (
+	stdoutInfo    string = " [+] "
+	stdoutError   string = " [x] "
+	stdoutWarning string = " [!] "
+	stdoutPanic   string = " [X] "
+)
+
 // serializeToFile returns a marshalled message given the default output message
 func serializeToFile(level Level, what, when string) []byte {
 	output := make(MessageFormat, 1)
@@ -23,23 +30,22 @@ func serializeToFile(level Level, what, when string) []byte {
 	return message
 }
 
-func serializeToOutput(level Level, what, when string) string {
-	message := ""
+func serializeToOutput(level Level, what, when string) []byte {
+	m := ""
 
 	switch level {
 	case InfoLevel:
-		message = when + " [+] "
-		message = message + what
+		m = when + stdoutInfo + what
 	case WarningLevel:
-		message = when + " [!] "
-		message = message + what
+		m = when + stdoutWarning + what
 	case ErrorLevel:
-		message = when + " [x] "
-		message = message + what
+		m = when + stdoutError + what
 	case PanicLevel:
-		message = when + " [P] "
-		message = message + what
+		m = when + stdoutPanic + what
 	}
 
-	return message + "\n"
+	b := []byte(m)
+	b = append(b, '\n')
+
+	return b
 }

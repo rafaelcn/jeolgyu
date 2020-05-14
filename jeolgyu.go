@@ -14,6 +14,10 @@ type (
 		sink     Sink
 		filename string
 		file     *os.File
+
+		// dedicated to testing
+		testing  bool
+		buf      []byte
 	}
 
 	// MessageFormat is a type containing the possible format for messages and
@@ -64,6 +68,7 @@ func New(sink Sink, fp string) (*Jeolgyu, error) {
 		sink:     sink,
 		filename: filename,
 		file:     file,
+		testing:  false,
 	}
 
 	return j, nil
@@ -95,33 +100,45 @@ func (j *Jeolgyu) sinkTo(level Level, message string, arguments ...interface{}) 
 
 	switch j.sink {
 	case SinkBoth:
-		sinkOutput(level, m)
-		sinkFile(level, m, j.file)
+		j.sinkOutput(level, m)
+		j.sinkFile(level, m, j.file)
 	case SinkFile:
-		sinkFile(level, m, j.file)
+		j.sinkFile(level, m, j.file)
 	case SinkOutput:
-		sinkOutput(level, m)
+		j.sinkOutput(level, m)
 	}
 }
 
 // sinkOutput formats the message to the stdout
-func sinkOutput(level Level, message string) {
+func (j *Jeolgyu) sinkOutput(level Level, message string) {
 	t := time.Now().Format("15:04:05")
 
+	if j.testing {
+		t = ""
+	}
+
+	m := serializeToOutput(level, message, t)
+	m = append(m, '\n')
+
 	if level == ErrorLevel {
-		fmt.Fprintf(os.Stderr, serializeToOutput(level, message, t))
+		fmt.Fprint(os.Stderr, string(m))
 	} else {
-		fmt.Fprintf(os.Stdout, serializeToOutput(level, message, t))
+		fmt.Fprint(os.Stdout, string(m))
 	}
 }
 
 // sinkFile appends a message to the current file log with a serialized output
-func sinkFile(level Level, message string, file *os.File) {
+func (j *Jeolgyu) sinkFile(level Level, message string, file *os.File) {
 	t := time.Now().Format("2006-Jan-2 15:04:05")
-	m := serializeToFile(level, message, t)
 
+	if j.testing {
+		t = ""
+	}
+
+	m := serializeToFile(level, message, t)
 	m = append(m, '\n')
-	file.WriteString(string(m))
+
+	file.Write(m)
 }
 
 // getFilename exists with debugging/testing purposes to return the name of
