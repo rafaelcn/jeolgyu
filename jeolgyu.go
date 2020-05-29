@@ -62,10 +62,11 @@ func New(s Settings) (*Jeolgyu, error) {
 			filename = s.Filename + ".log"
 		}
 
+		abs, _ := filepath.Abs(s.Filepath)
+		filename = path.Join(abs, filename)
+
 		if !exists(filename) {
-			abs, _ := filepath.Abs(s.Filepath)
-			f := path.Join(abs, filename)
-			file, err = os.Create(f)
+			file, err = os.Create(filename)
 
 			if err != nil {
 				const msg = "Error trying to create log file %s. Reason %v"
@@ -74,7 +75,7 @@ func New(s Settings) (*Jeolgyu, error) {
 				return nil, e
 			}
 		} else {
-			file, err = os.Open(filename)
+			file, err = os.OpenFile(filename, os.O_APPEND | os.O_WRONLY, 0644)
 
 			if err != nil {
 				const msg = "Error trying to open log file %s. Reason %v"
