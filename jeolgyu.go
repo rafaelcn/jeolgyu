@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sync"
 	"time"
 )
 
@@ -15,9 +16,27 @@ type (
 		filename string
 		file     *os.File
 
-		// dedicated to testing
-		testing  bool
-		buf      []byte
+		mu sync.Mutex
+	}
+
+	// Settings encapsulates the settings for the logger and it is
+	// accepted in its constructor.
+	Settings struct {
+		// SinkType specifies the type of the sink used by the initialized
+		// logger. There are currently three types of sinks: SinkFile,
+		// SinkOutput and SinkBoth.
+		//
+		// Whenever you use the SinkFile a file containing the log content will
+		// be created with a timestamp of creation of the specified filename.
+		// Using the SinkOutput the logger will direct its messages to the
+		// stdout or stderr, depending on the level of the message.
+		SinkType Sink
+		// Filepath is an optional field that indicates where the logger file
+		// should be created. Giving it an empty string will lead Jeolgyu to
+		// create in the current running directory.
+		Filepath string
+		// Filename is an optional field that sets the name of the log file.
+		Filename string
 	}
 
 	// MessageFormat is a type containing the possible format for messages and
@@ -25,24 +44,26 @@ type (
 	MessageFormat map[string]string
 )
 
-// New creates a jeolgyu logger. The sink is given as one of the three:
-// SinkFile, SinkOutput, SinkBoth.
-//
-// The fp (filepath) parameter is only given if you want to specify where the
-// loggerfile must be created, this parameter can be given as a relative path,
-// by default it creates log files under the same directory of the running
-// application.
-func New(sink Sink, fp string) (*Jeolgyu, error) {
+// New creates a jeolgyu logger with a settings struct
+func New(s Settings) (*Jeolgyu, error) {
 	filename := ""
 	var file *os.File
 	var err error
 
-	if (sink & SinkFile) == SinkFile {
-		t := time.Now().Format("2006-Jan-2 15h 04m 05s")
-		filename = t + ".log"
+	if (s.SinkType & SinkFile) == SinkFile {
+		t := ""
+
+		// create a file with a timestamp on its name only if the user did not
+		// specified the name on creation.
+		if len(s.Filename) == 0 {
+			t = time.Now().Format("2006-Jan-2 15h 04m 05s")
+			filename = t + ".log"
+		} else {
+			filename = s.Filename + ".log"
+		}
 
 		if !exists(filename) {
-			abs, _ := filepath.Abs(fp)
+			abs, _ := filepath.Abs(s.Filepath)
 			f := path.Join(abs, filename)
 			file, err = os.Create(f)
 
@@ -65,7 +86,7 @@ func New(sink Sink, fp string) (*Jeolgyu, error) {
 	}
 
 	j := &Jeolgyu{
-		sink:     sink,
+		sink:     s.SinkType,
 		filename: filename,
 		file:     file,
 		testing:  false,
@@ -113,12 +134,7 @@ func (j *Jeolgyu) sinkTo(level Level, message string, arguments ...interface{}) 
 func (j *Jeolgyu) sinkOutput(level Level, message string) {
 	t := time.Now().Format("15:04:05")
 
-	if j.testing {
-		t = ""
-	}
-
 	m := serializeToOutput(level, message, t)
-	//m = append(m, '\n')
 
 	if level == ErrorLevel {
 		fmt.Fprint(os.Stderr, string(m))
@@ -129,11 +145,10 @@ func (j *Jeolgyu) sinkOutput(level Level, message string) {
 
 // sinkFile appends a message to the current file log with a serialized output
 func (j *Jeolgyu) sinkFile(level Level, message string, file *os.File) {
-	t := time.Now().Format("2006-Jan-2 15:04:05")
+	j.mu.Lock()
+	defer j.mu.Unlock()
 
-	if j.testing {
-		t = ""
-	}
+	t := time.Now().Format("2006-Jan-2 15:04:05")
 
 	m := serializeToFile(level, message, t)
 	m = append(m, '\n')
