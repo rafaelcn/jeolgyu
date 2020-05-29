@@ -15,7 +15,7 @@ type (
 		sink     Sink
 		filename string
 		file     *os.File
-
+		// write file lock
 		mu sync.Mutex
 	}
 
@@ -89,7 +89,6 @@ func New(s Settings) (*Jeolgyu, error) {
 		sink:     s.SinkType,
 		filename: filename,
 		file:     file,
-		testing:  false,
 	}
 
 	return j, nil
