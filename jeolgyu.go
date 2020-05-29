@@ -75,7 +75,7 @@ func New(s Settings) (*Jeolgyu, error) {
 				return nil, e
 			}
 		} else {
-			file, err = os.OpenFile(filename, os.O_APPEND | os.O_WRONLY, 0644)
+			file, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
 
 			if err != nil {
 				const msg = "Error trying to open log file %s. Reason %v"
@@ -154,16 +154,4 @@ func (j *Jeolgyu) sinkFile(level Level, message string, file *os.File) {
 	m = append(m, '\n')
 
 	file.Write(m)
-}
-
-// getFilename exists with debugging/testing purposes to return the name of
-// the file that Jeolgyu created when initialized.
-func (j *Jeolgyu) getFilename() string {
-	return j.filename
-}
-
-// getFile exists with debugging/testing purposes to return the file that
-// Jeolgyu created when initialized.
-func (j *Jeolgyu) getFile() *os.File {
-	return j.file
 }
