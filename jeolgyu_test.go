@@ -43,7 +43,7 @@ var jeolgyuTests []Test = []Test{
 }
 
 func TestSinkFile(t *testing.T) {
-	j, err := New(SinkFile, "")
+	j, err := New(Settings{SinkType: SinkFile, Filepath: ""})
 
 	if err != nil {
 		t.Error(err)
