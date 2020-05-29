@@ -47,7 +47,7 @@ func TestSerialize(t *testing.T) {
 
 	for i, te := range tt {
 		f := format(te.Message, te.Arguments...)
-		m := Serialize(te.Level, f, "")
+		m := serialize(te.Level, f, "")
 
 		if ok := reflect.DeepEqual(te.Want, string(m)); !ok && !te.ShouldFail {
 			t.Logf("Failed assertion %d. Wants: %s | Got %s", i, te.Want, m)

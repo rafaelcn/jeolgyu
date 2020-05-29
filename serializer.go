@@ -5,8 +5,8 @@ import (
 	"fmt"
 )
 
-// Serialize returns a marshalled message given the default output message
-func Serialize(level Level, what, when string) []byte {
+// serialize returns a marshalled message given the default output message
+func serialize(level Level, what, when string) []byte {
 	output := make(MessageFormat, 1)
 
 	output["level"] = level.String()

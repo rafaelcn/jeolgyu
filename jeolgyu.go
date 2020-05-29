@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sync"
 	"time"
 )
 
@@ -14,6 +15,8 @@ type (
 		sink     Sink
 		filename string
 		file     *os.File
+		// write file lock
+		mu sync.Mutex
 	}
 
 	// Settings encapsulates the settings for the logger and it is
@@ -96,7 +99,7 @@ func (j *Jeolgyu) Info(message string, arguments ...interface{}) {
 	t := now()
 	m := format(message, arguments...)
 
-	j.sinkTo(Serialize(InfoLevel, m, t))
+	j.sinkTo(serialize(InfoLevel, m, t))
 }
 
 // Warning prints a warning message to whatever sink is selected
@@ -104,7 +107,7 @@ func (j *Jeolgyu) Warning(message string, arguments ...interface{}) {
 	t := now()
 	m := format(message, arguments...)
 
-	j.sinkTo(Serialize(WarningLevel, m, t))
+	j.sinkTo(serialize(WarningLevel, m, t))
 }
 
 // Error prints an error message to whatever sink is selected
@@ -112,7 +115,7 @@ func (j *Jeolgyu) Error(message string, arguments ...interface{}) {
 	t := now()
 	m := format(message, arguments...)
 
-	j.sinkTo(Serialize(ErrorLevel, m, t))
+	j.sinkTo(serialize(ErrorLevel, m, t))
 }
 
 // Panic prints a message to whatever sink is selected
@@ -120,7 +123,7 @@ func (j *Jeolgyu) Panic(message string, arguments ...interface{}) {
 	t := now()
 	m := format(message, arguments...)
 
-	j.sinkTo(Serialize(PanicLevel, m, t))
+	j.sinkTo(serialize(PanicLevel, m, t))
 }
 
 // sinkTo sends the message to whatever sink j is set to
@@ -136,43 +139,13 @@ func (j *Jeolgyu) sinkTo(m []byte) {
 	}
 }
 
-// This function exists with debugging/testing purposes to return the name of
-// the file that Jeolgyu created when initialized.
-func (j *Jeolgyu) getFilename() string {
-	return j.filename
-}
-
-// This function exists with debugging/testing purposes to return the file that
-// Jeolgyu created when initialized.
-func (j *Jeolgyu) getFile() *os.File {
-	return j.file
-}
-
 func sinkOutput(message []byte) {
 	fmt.Print(string(message))
 }
 
 func (j *Jeolgyu) sinkFile(message []byte, file *os.File) {
+	j.mu.Lock()
 	message = append(message, '\n')
 	file.WriteString(string(message))
-}
-
-func exists(filename string) bool {
-	if _, err := os.Stat(filename); err != nil {
-		return false
-	}
-
-	return true
-}
-
-func now() string {
-	return time.Now().Format("2006-Jan-2 15h 04m 05s")
-}
-
-func format(message string, arguments ...interface{}) string {
-	if arguments == nil || len(arguments) == 0 {
-		return message
-	}
-
-	return fmt.Sprintf(message, arguments...)
+	j.mu.Unlock()
 }
