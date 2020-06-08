@@ -62,6 +62,18 @@ func New(s Settings) (*Jeolgyu, error) {
 			filename = s.Filename + ".log"
 		}
 
+		// create the specified folder if it doesn't exist
+		if !exists(s.Filepath) && len(s.Filepath) > 0 {
+			err := os.Mkdir(s.Filepath, 0744)
+
+			if err != nil {
+				e := fmt.Errorf("Error trying to create folder %s. Reason %v",
+					s.Filepath, err)
+
+				return nil, e
+			}
+		}
+
 		abs, _ := filepath.Abs(s.Filepath)
 		filename = path.Join(abs, filename)
 
