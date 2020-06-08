@@ -13,8 +13,8 @@ type serializerTests struct {
 	ShouldFail bool
 }
 
-func TestSerialize(t *testing.T) {
-	tt := []serializerTests{
+func TestSerializeFile(t *testing.T) {
+	tests := []serializerTests{
 		{
 			Level:      ErrorLevel,
 			Message:    "A message with %s.",
@@ -45,12 +45,12 @@ func TestSerialize(t *testing.T) {
 		},
 	}
 
-	for i, te := range tt {
-		f := format(te.Message, te.Arguments...)
-		m := serialize(te.Level, f, "")
+	for i, test := range tests {
+		f := format(test.Message, test.Arguments...)
+		m := serializeToFile(test.Level, f, "")
 
-		if ok := reflect.DeepEqual(te.Want, string(m)); !ok && !te.ShouldFail {
-			t.Logf("Failed assertion %d. Wants: %s | Got %s", i, te.Want, m)
+		if ok := reflect.DeepEqual(test.Want, string(m)); !ok && !test.ShouldFail {
+			t.Logf("Failed assertion %d. Wants: %s | Got %s", i, test.Want, m)
 		}
 	}
 }

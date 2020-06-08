@@ -3,19 +3,16 @@ package jeolgyu
 import (
 	"fmt"
 	"os"
-	"time"
 )
 
+// exists verify the existence of a file and returns true if the file exists and
+// false otherwise
 func exists(filename string) bool {
 	if _, err := os.Stat(filename); err != nil {
 		return false
 	}
 
 	return true
-}
-
-func now() string {
-	return time.Now().Format("2006-Jan-2 15h 04m 05s")
 }
 
 func format(message string, arguments ...interface{}) string {

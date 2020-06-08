@@ -75,7 +75,7 @@ func New(s Settings) (*Jeolgyu, error) {
 				return nil, e
 			}
 		} else {
-			file, err = os.OpenFile(filename, os.O_APPEND | os.O_WRONLY, 0644)
+			file, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
 
 			if err != nil {
 				const msg = "Error trying to open log file %s. Reason %v"
@@ -97,56 +97,61 @@ func New(s Settings) (*Jeolgyu, error) {
 
 // Info prints information messages to whathever sink is selected
 func (j *Jeolgyu) Info(message string, arguments ...interface{}) {
-	t := now()
-	m := format(message, arguments...)
-
-	j.sinkTo(serialize(InfoLevel, m, t))
+	j.sinkTo(InfoLevel, message, arguments...)
 }
 
 // Warning prints a warning message to whatever sink is selected
 func (j *Jeolgyu) Warning(message string, arguments ...interface{}) {
-	t := now()
-	m := format(message, arguments...)
-
-	j.sinkTo(serialize(WarningLevel, m, t))
+	j.sinkTo(WarningLevel, message, arguments...)
 }
 
 // Error prints an error message to whatever sink is selected
 func (j *Jeolgyu) Error(message string, arguments ...interface{}) {
-	t := now()
-	m := format(message, arguments...)
-
-	j.sinkTo(serialize(ErrorLevel, m, t))
+	j.sinkTo(ErrorLevel, message, arguments...)
 }
 
 // Panic prints a message to whatever sink is selected
 func (j *Jeolgyu) Panic(message string, arguments ...interface{}) {
-	t := now()
-	m := format(message, arguments...)
-
-	j.sinkTo(serialize(PanicLevel, m, t))
+	j.sinkTo(PanicLevel, message, arguments...)
 }
 
 // sinkTo sends the message to whatever sink j is set to
-func (j *Jeolgyu) sinkTo(m []byte) {
+func (j *Jeolgyu) sinkTo(level Level, message string, arguments ...interface{}) {
+	m := format(message, arguments...)
+
 	switch j.sink {
 	case SinkBoth:
-		sinkOutput(m)
-		j.sinkFile(m, j.file)
+		j.sinkOutput(level, m)
+		j.sinkFile(level, m, j.file)
 	case SinkFile:
-		j.sinkFile(m, j.file)
+		j.sinkFile(level, m, j.file)
 	case SinkOutput:
-		sinkOutput(m)
+		j.sinkOutput(level, m)
 	}
 }
 
-func sinkOutput(message []byte) {
-	fmt.Print(string(message))
+// sinkOutput formats the message to the stdout
+func (j *Jeolgyu) sinkOutput(level Level, message string) {
+	t := time.Now().Format("15:04:05")
+
+	m := serializeToOutput(level, message, t)
+
+	if level == ErrorLevel {
+		fmt.Fprint(os.Stderr, string(m))
+	} else {
+		fmt.Fprint(os.Stdout, string(m))
+	}
 }
 
-func (j *Jeolgyu) sinkFile(message []byte, file *os.File) {
+// sinkFile appends a message to the current file log with a serialized output
+func (j *Jeolgyu) sinkFile(level Level, message string, file *os.File) {
 	j.mu.Lock()
-	message = append(message, '\n')
-	file.WriteString(string(message))
-	j.mu.Unlock()
+	defer j.mu.Unlock()
+
+	t := time.Now().Format("2006-Jan-2 15:04:05")
+
+	m := serializeToFile(level, message, t)
+	m = append(m, '\n')
+
+	file.Write(m)
 }
