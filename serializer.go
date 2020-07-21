@@ -16,7 +16,7 @@ const (
 func serializeToFile(level Level, what, when string) []byte {
 	output := make(MessageFormat, 1)
 
-	output["level"] = level.String()
+	output["level"] = level.string()
 	output["what"] = what
 	output["when"] = when
 

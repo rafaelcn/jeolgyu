@@ -17,7 +17,7 @@ const (
 )
 
 // Returns a string representation of the level
-func (l Level) String() string {
+func (l Level) string() string {
 	s := ""
 
 	switch l {
