@@ -1,5 +1,11 @@
 name: Go test
-on: [push]
+
+on:
+    push:
+        branches: [ $default_branch ]
+    pull_request:
+        branches: [ $default_branch ]
+
 jobs:
 
   build:
@@ -8,7 +14,7 @@ jobs:
     steps:
 
     - name: Set up Go 1.13
-      uses: actions/setup-go@v1
+      uses: actions/setup-go@v2
       with:
         go-version: 1.13
       id: go
@@ -23,6 +29,9 @@ jobs:
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure
         fi
+
+    - name: Build
+      run: go build -v .
 
     - name: Test
       run: go test -v .
