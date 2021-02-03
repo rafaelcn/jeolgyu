@@ -30,10 +30,10 @@ func TestSerializeFile(t *testing.T) {
 			ShouldFail: false,
 		},
 		{
-			Level:      PanicLevel,
+			Level:      FatalLevel,
 			Message:    "A %s message with %d %s.",
 			Arguments:  []interface{}{"Rafael's", 3, "arguments"},
-			Want:       `{"level":"panic","what":"A Rafael's message with 3 arguments.","when":""}`,
+			Want:       `{"level":"fatal","what":"A Rafael's message with 3 arguments.","when":""}`,
 			ShouldFail: false,
 		},
 		{

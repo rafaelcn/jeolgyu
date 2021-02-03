@@ -11,9 +11,9 @@ const (
 	WarningLevel
 	// ErrorLevel means that wrong happened, hence the error.
 	ErrorLevel
-	// PanicLevel is a so strong message you don't want it happening on your
+	// FatalLevel is a so strong message you don't want it happening on your
 	// system.
-	PanicLevel
+	FatalLevel
 )
 
 // Returns a string representation of the level
@@ -27,8 +27,8 @@ func (l Level) string() string {
 		s = "warning"
 	case ErrorLevel:
 		s = "error"
-	case PanicLevel:
-		s = "panic"
+	case FatalLevel:
+		s = "fatal"
 	}
 
 	return s

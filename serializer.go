@@ -9,7 +9,7 @@ const (
 	stdoutInfo    string = " [+] "
 	stdoutError   string = " [x] "
 	stdoutWarning string = " [!] "
-	stdoutPanic   string = " [X] "
+	stdoutFatal   string = " [-] "
 )
 
 // serializeToFile returns a marshalled message given the default output message
@@ -40,8 +40,8 @@ func serializeToOutput(level Level, what, when string) []byte {
 		m = when + stdoutWarning + what
 	case ErrorLevel:
 		m = when + stdoutError + what
-	case PanicLevel:
-		m = when + stdoutPanic + what
+	case FatalLevel:
+		m = when + stdoutFatal + what
 	}
 
 	b := []byte(m)

@@ -122,9 +122,10 @@ func (j *Jeolgyu) Error(message string, arguments ...interface{}) {
 	j.sinkTo(ErrorLevel, message, arguments...)
 }
 
-// Panic prints a message to whatever sink is selected
-func (j *Jeolgyu) Panic(message string, arguments ...interface{}) {
-	j.sinkTo(PanicLevel, message, arguments...)
+// Fatal prints a message to whatever sink is selected and exits
+func (j *Jeolgyu) Fatal(message string, arguments ...interface{}) {
+	j.sinkTo(FatalLevel, message, arguments...)
+	os.Exit(1)
 }
 
 // sinkTo sends the message to whatever sink j is set to

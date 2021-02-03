@@ -16,11 +16,6 @@ type Test struct {
 
 var jeolgyuTests []Test = []Test{
 	{
-		Level:   PanicLevel,
-		Message: "Something very bad happened",
-		Want:    `{"level":"panic","what":"Something very bad happened","when":""}`,
-	},
-	{
 		Level:   WarningLevel,
 		Message: "Something bad might have happened",
 		Want:    `{"level":"warning","what":"Something bad might have happened","when":""}`,
@@ -57,8 +52,8 @@ func TestSinkFile(t *testing.T) {
 			j.Warning(tt.Message, tt.Arguments...)
 		case ErrorLevel:
 			j.Error(tt.Message, tt.Arguments...)
-		case PanicLevel:
-			j.Panic(tt.Message, tt.Arguments...)
+		case FatalLevel:
+			j.Fatal(tt.Message, tt.Arguments...)
 		}
 
 		content, err := ioutil.ReadFile(j.filename)
@@ -113,8 +108,8 @@ func TestFilenameWrite(t *testing.T) {
 			l.Warning(tt.Message, tt.Arguments...)
 		case ErrorLevel:
 			l.Error(tt.Message, tt.Arguments...)
-		case PanicLevel:
-			l.Panic(tt.Message, tt.Arguments...)
+		case FatalLevel:
+			l.Fatal(tt.Message, tt.Arguments...)
 		}
 
 		content, err := ioutil.ReadFile(l.filename)
